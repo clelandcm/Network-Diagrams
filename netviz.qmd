@@ -1,0 +1,52 @@
+---
+title: "Network Visualization"
+format:
+  html:
+    page-layout: full
+    embed-resources: true
+editor: source
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+[networkD3](https://christophergandrud.github.io/networkD3/)     
+[Network Analysis and Visualization with R and igraph](https://kateto.net/netscix2016.html)       
+[Introduction to Network Analysis Using R](https://yunranchen.github.io/intro-net-r/index.html)        
+
+```{r}
+library(networkD3)
+library(igraph)
+```
+
+# Force Network
+
+```{r}
+DF <- openxlsx::read.xlsx("pillars.xlsx")
+
+# igraph from data frame
+ig1 <- graph_from_data_frame(DF, directed = FALSE)
+
+V(ig1)$name
+
+V(ig1)$pillar <- rep(c("Yes","No"), c(6,21))
+
+V(ig1)$size <- ifelse(V(ig1)$pillar == "Yes", 30, 1)
+
+E(ig1)$weight <- 10
+
+# Convert igraph to list for networkD3
+sj_list <- igraph_to_networkD3(ig1, group = c(1:6, rep(7,21)))
+
+sj_list$nodes$size <- rep(c(200,10), c(6,21))
+
+# Plot as a forceDirected Network
+ forceNetwork(Links = sj_list$links, Nodes = sj_list$nodes, Source = 'source',
+              Target = 'target', NodeID = 'name', Group = 'group', Nodesize = 'size', 
+              zoom = TRUE, linkDistance = 200,
+              width = 1200, height = 800)
+```
+
+
+
