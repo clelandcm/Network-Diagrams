@@ -25,27 +25,57 @@ library(igraph)
 ```{r}
 DF <- openxlsx::read.xlsx("pillars.xlsx")
 
-# igraph from data frame
-ig1 <- graph_from_data_frame(DF, directed = FALSE)
+head(DF)
 
-V(ig1)$name
+DivNodes <- data.frame(name = union(DF$src, DF$target))
+DivLinks <- data.frame(source = match(DF$src, DivNodes$name) - 1, 
+                       target = match(DF$target, DivNodes$name) - 1)
 
-V(ig1)$pillar <- rep(c("Yes","No"), c(6,21))
+DivNodes$group <- c(1:6, rep(7,21))
+DivNodes$size <- rep(c(100,10), c(6,21))
 
-V(ig1)$size <- ifelse(V(ig1)$pillar == "Yes", 30, 1)
+# Create force Network
+fn <- forceNetwork(Links = DivLinks, Nodes = DivNodes, Source = 'source',
+                   Target = 'target', NodeID = 'name', Group = 'group', 
+                   Nodesize = 'size', zoom = TRUE, linkDistance = 200,
+                   width = 1200, height = 800)
 
-E(ig1)$weight <- 10
+# Where to find nodes data.frame
+str(fn$x$nodes)
 
-# Convert igraph to list for networkD3
-sj_list <- igraph_to_networkD3(ig1, group = c(1:6, rep(7,21)))
+# Add hyperlinks to node data.frame  
+fn$x$nodes$hyperlink <- c("https://med.nyu.edu/departments-institutes/population-health/divisions-sections-centers/biostatistics/",
+                          "https://med.nyu.edu/departments-institutes/population-health/divisions-sections-centers/biostatistics/",
+                          "https://med.nyu.edu/departments-institutes/population-health/divisions-sections-centers/biostatistics/",
+                          "https://med.nyu.edu/departments-institutes/population-health/divisions-sections-centers/biostatistics/",
+                          "https://med.nyu.edu/departments-institutes/population-health/divisions-sections-centers/biostatistics/",
+                          "https://med.nyu.edu/departments-institutes/population-health/divisions-sections-centers/biostatistics/",
+                          "https://med.nyu.edu/faculty/ivan-l-diaz",
+                          "https://med.nyu.edu/faculty/michele-santacatterina",
+                          "https://med.nyu.edu/faculty/nicholas-illenberger",
+                          "https://med.nyu.edu/faculty/wenbo-wu",
+                          "https://med.nyu.edu/faculty/samrachana-adhikari",
+                          "https://med.nyu.edu/faculty/keith-s-goldfeld",
+                          "https://med.nyu.edu/faculty/erinn-m-hade",
+                          "https://med.nyu.edu/faculty/andrea-b-troxel",
+                          "https://med.nyu.edu/faculty/cheongeun-oh",
+                          "https://med.nyu.edu/faculty/chang-yu",
+                          "https://med.nyu.edu/faculty/hayley-belli",
+                          "https://med.nyu.edu/faculty/yongzhao-shao",
+                          "https://med.nyu.edu/faculty/thaddeus-tarpey",
+                          "https://med.nyu.edu/faculty/charles-cleland",
+                          "https://med.nyu.edu/faculty/jiyuan-hu",
+                          "https://med.nyu.edu/faculty/rebecca-anthopolos",
+                          "https://med.nyu.edu/faculty/huilin-li",
+                          "https://med.nyu.edu/faculty/judith-d-goldberg",
+                          "https://med.nyu.edu/faculty/mengling-liu",
+                          "https://med.nyu.edu/faculty/hyung-g-park",
+                          "https://med.nyu.edu/faculty/hakhamanesh-mostafavi")
 
-sj_list$nodes$size <- rep(c(200,10), c(6,21))
+# define a click action to open the hyperlink for each node in a new window
+fn$x$options$clickAction = 'window.open(d.hyperlink)'
 
-# Plot as a forceDirected Network
- forceNetwork(Links = sj_list$links, Nodes = sj_list$nodes, Source = 'source',
-              Target = 'target', NodeID = 'name', Group = 'group', Nodesize = 'size', 
-              zoom = TRUE, linkDistance = 200,
-              width = 1200, height = 800)
+fn
 ```
 
 
